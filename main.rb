@@ -1,6 +1,8 @@
 require 'gosu'
 require './player'
 require './star'
+require './explosion'
+
 
 module ZOrder
   Background, Moon, Stars, Player, UI = *0..3
@@ -20,14 +22,15 @@ class GameWindow < Gosu::Window
     @stars << (Star.new(@star_anim))
     @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
     @thrusting = false
+    @explosion_image = Explosion.new Gosu::Image::load_tiles(self, "media/explosion.png", 40, 40, false)
   end
 
   def update #changes the state of the variables every iteration 
     if @game_over_time != nil
       if @game_over_time <= Time.now - 2
         @game_over_time = nil
+       # @image_index = 0
       end
-
     else
       if button_down?(Gosu::KbLeft) or button_down?(Gosu::GpLeft) then
         @player.turn_left
@@ -48,7 +51,8 @@ class GameWindow < Gosu::Window
       @player.collect_stars(@stars)
 
       if @player.touch_moon
-        stop_jet_sound      
+        stop_jet_sound     
+
         @game_over_time = Time.now
       end
 
@@ -65,7 +69,9 @@ class GameWindow < Gosu::Window
     @stars.each { |star| star.draw }
     @font.draw("Score: #{@player.score}", 10, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     if @game_over_time != nil
-      @font.draw("GAME OVER", 255, 140, ZOrder::Player,1.0, 1.0, 0xffffffff)
+      @explosion_image.update
+      @explosion_image.draw
+      @font.draw("GAME OVER", 258, 140, ZOrder::Player,1.0, 1.0, 0xffffffff)
     end
 
   end
