@@ -3,16 +3,16 @@ require './player'
 require './star'
 
 module ZOrder
-  Background, Stars, Player, UI = *0..3
+  Background, Moon, Stars, Player, UI = *0..3
 end
 
 class GameWindow < Gosu::Window
   def initialize
     super(640, 480, false)
-    self.caption = "Gosu Tutorial Game"
+    self.caption = "Lunar Slingshot!"
     @jet_sound = Gosu::Sample.new(self, "media/jet_sound.wav")
     @background_image = Gosu::Image.new(self, "media/Space.png", true)
-    @sun = Gosu::Image.new(self, "media/Sun.png", false)
+    @moon = Gosu::Image.new(self, "media/moon.png", false)
     @player = Player.new(self)
     @player.warp(100, 240)
     @star_anim = Gosu::Image::load_tiles(self, "media/Star.png", 3, 3, false)
@@ -47,7 +47,7 @@ class GameWindow < Gosu::Window
       @player.move
       @player.collect_stars(@stars)
 
-      if @player.touch_sun
+      if @player.touch_moon
         stop_jet_sound      
         @game_over_time = Time.now
       end
@@ -60,12 +60,12 @@ class GameWindow < Gosu::Window
 
   def draw #draws the varibales everytime it its called 
     @background_image.draw(0, 0, ZOrder::Background)
-    @sun.draw(295, 215, ZOrder::UI)
+    @moon.draw(305, 225, ZOrder::Moon)
     @player.draw(@thrusting)
     @stars.each { |star| star.draw }
-    @font.draw("Score: #{@player.score}", 10, 10, ZOrder::UI, 1.0, 1.0, 0xffffff00)
+    @font.draw("Score: #{@player.score}", 10, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     if @game_over_time != nil
-      @font.draw("GAME OVER", 265, 140, ZOrder::UI,1.0, 1.0, 0xffffffff)
+      @font.draw("GAME OVER", 255, 140, ZOrder::Player,1.0, 1.0, 0xffffffff)
     end
 
   end

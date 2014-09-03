@@ -81,7 +81,7 @@ class Player
     @score
   end
 
-  def touch_sun
+  def touch_moon
     if @g_distance < 10
       puts "true"
       @explosion.play
