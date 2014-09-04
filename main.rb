@@ -15,8 +15,10 @@ class GameWindow < Gosu::Window
     @jet_sound = Gosu::Sample.new(self, "media/jet_sound.wav")
     @background_image = Gosu::Image.new(self, "media/Space.png", true)
     @moon = Gosu::Image.new(self, "media/moon.png", false)
-    @player = Player.new(self)
+    @player = Player.new(self, 1)
+    @player2 = Player.new(self, 2)
     @player.warp(100, 240)
+    @player2.warp(540, 240)
     @star_anim = Gosu::Image::load_tiles(self, "media/Star.png", 3, 3, false)
     @stars = []
     @stars << (Star.new(@star_anim))
@@ -29,16 +31,21 @@ class GameWindow < Gosu::Window
     if @game_over_time != nil
       if @game_over_time <= Time.now - 2
         @game_over_time = nil
+      else
+        @explosion_image.update
        # @image_index = 0
       end
     else
-      if button_down?(Gosu::KbLeft) or button_down?(Gosu::GpLeft) then
+      if button_down?(Gosu::KbS)
         @player.turn_left
       end
-      if button_down?(Gosu::KbRight) or button_down?(Gosu::GpRight) then
+      if button_down?(Gosu::KbF)
         @player.turn_right
       end
-      if button_down?(Gosu::KbUp) or button_down?(Gosu::GpButton0) then
+      if button_down?(Gosu::KbW)
+        #@player.fire
+      end
+      if button_down?(Gosu::KbD)
         @player.accelerate
         @thrusting = true
         start_jet_sound
@@ -46,13 +53,31 @@ class GameWindow < Gosu::Window
         @thrusting = false
         stop_jet_sound
       end
+      if button_down?(Gosu::KbJ) 
+        @player2.turn_left
+      end
+      if button_down?(Gosu::KbL)
+        @player2.turn_right
+      end
+      if button_down?(Gosu::KbI)
+        #@player2.fire
+      end
+      if button_down?(Gosu::KbK)
+        @player2.accelerate
+        @thrusting = true
+        start_jet_sound
+      else
+        @thrusing = false
+        stop_jet_sound
+      end
 
       @player.move
+      @player2.move
       @player.collect_stars(@stars)
+      @player2.collect_stars(@stars)
 
-      if @player.touch_moon
+      if @player.touch_moon || @player2.touch_moon
         stop_jet_sound     
-
         @game_over_time = Time.now
       end
 
@@ -65,15 +90,18 @@ class GameWindow < Gosu::Window
   def draw #draws the varibales everytime it its called 
     @background_image.draw(0, 0, ZOrder::Background)
     @moon.draw(305, 225, ZOrder::Moon)
-    @player.draw(@thrusting)
     @stars.each { |star| star.draw }
     @font.draw("Score: #{@player.score}", 10, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
+    if @game_over_time == nil
+      @player.draw(@thrusting)
+      @player2.draw(@thrusting)
+    end
+
     if @game_over_time != nil
-      @explosion_image.update
+
       @explosion_image.draw
       @font.draw("GAME OVER", 258, 140, ZOrder::Player,1.0, 1.0, 0xffffffff)
     end
-
   end
 
   def button_down(id)

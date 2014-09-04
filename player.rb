@@ -1,6 +1,11 @@
 class Player
-  def initialize(window)
-    @image = Gosu::Image.new(window, "media/Starfighter.png", false)
+  def initialize(window, player_number)
+    if player_number == 1
+      @image = Gosu::Image.new(window, "media/Starfighter.png", false)
+    else
+      @image = Gosu::Image.new(window, "media/Starfighter2.png", false)
+      @angle = 180
+    end
     @image_jet = Gosu::Image.new(window, "media/Starfighter_jet.png", false)
     @beep = Gosu::Sample.new(window, "media/Beep.wav")
     @explosion = Gosu::Sample.new(window, "media/Explosion.wav")
@@ -82,7 +87,7 @@ class Player
   end
 
   def touch_moon
-    if @g_distance < 10
+    if @g_distance < 19.5
       puts "true"
       @explosion.play
       @x = 100
