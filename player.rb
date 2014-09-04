@@ -1,4 +1,5 @@
 class Player
+  attr_accessor :score
   def initialize(window, player_number)
     if player_number == 1
       @image = Gosu::Image.new(window, "media/Starfighter.png", false)
@@ -7,6 +8,7 @@ class Player
       @angle = 180
     end
     @image_jet = Gosu::Image.new(window, "media/Starfighter_jet.png", false)
+    @image_jet_p2 = Gosu::Image.new(window, "media/Starfighter_jet_2.png", false)
     @beep = Gosu::Sample.new(window, "media/Beep.wav")
     @explosion = Gosu::Sample.new(window, "media/Explosion.wav")
     @woosh_sound = Gosu::Sample.new(window, "media/woosh_sound.wav")
@@ -14,6 +16,7 @@ class Player
     @centerX = 320
     @centerY = 240
     @score = 0
+    @score_player_2 = 0
   end
 
   def warp(x, y)
@@ -75,15 +78,23 @@ class Player
   end
 
 
-  def draw(thrusting)
+  def draw(thrusting, player)
     @image.draw_rot(@x, @y, 1, @angle)
-    if thrusting
+    if thrusting == true && player == 1
       @image_jet.draw_rot(@x, @y, 1, @angle)
+    elsif thrusting == true &&  player == 2
+      @image_jet_p2.draw_rot(@x, @y, 1, @angle)
+    else
+      #nothing
     end
   end
 
   def score
     @score
+  end
+
+  def clear_score
+    @score = 0
   end
 
   def touch_moon
@@ -93,7 +104,7 @@ class Player
       @x = 100
       @y = 100
       @vel_x = @vel_y = 0
-      @score = 0
+      clear_score
       return true
     else
       puts "false"
