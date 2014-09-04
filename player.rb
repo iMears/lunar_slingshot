@@ -97,12 +97,14 @@ class Player
     @score = 0
   end
 
+  def reset_velocity
+    @vel_x = @vel_y = @angle = 0.0
+  end
+
   def touch_moon
     if @g_distance < 19.5
       puts "true"
       @explosion.play
-      @x = 100
-      @y = 100
       @vel_x = @vel_y = 0
       clear_score
       return true

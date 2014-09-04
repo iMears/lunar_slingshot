@@ -11,7 +11,7 @@ end
 class GameWindow < Gosu::Window
   def initialize
     super(640, 480, false)
-    self.caption = "Lunar Slingshot!"
+    self.caption = "Lunar Slingshot"
     @jet_sound = Gosu::Sample.new(self, "media/jet_sound.wav")
     @background_image = Gosu::Image.new(self, "media/Space.png", true)
     @moon = Gosu::Image.new(self, "media/moon.png", false)
@@ -36,61 +36,81 @@ class GameWindow < Gosu::Window
       else
         @explosion_image.update
         @player.score = @player2.score = 0
+        @player.warp(100, 240)
+        @player2.warp(540, 240)
+        @player.reset_velocity
+        @player2.reset_velocity
       end
     else
       if button_down?(Gosu::KbS)
         @player_commands[0] = true
-      elsif button_down?(Gosu::KbF)
+      end
+      if button_down?(Gosu::KbF)
         @player_commands[1] = true
-      elsif button_down?(Gosu::KbE)
+      end
+      if button_down?(Gosu::KbE)
         @player_commands[2] = true
-      elsif button_down?(Gosu::KbD)
+      end
+      if button_down?(Gosu::KbD)
         @player_commands[3] = true
-      elsif button_down?(Gosu::KbJ) 
+      end
+      if button_down?(Gosu::KbJ) 
         @player_commands[4] = true
-      elsif button_down?(Gosu::KbL)
+      end
+      if button_down?(Gosu::KbL)
         @player_commands[5] = true
-      elsif button_down?(Gosu::KbI)
+      end
+      if button_down?(Gosu::KbI)
         @player_commands[6] = true
-      elsif button_down?(Gosu::KbK)
+      end
+      if button_down?(Gosu::KbK)
         @player_commands[7] = true
-      else
-        #nothing
       end
 
       if @player_commands[0] == true
         @player.turn_left
         @player_commands[0] = false
-      elsif @player_commands[1] == true
+      end
+      if @player_commands[1] == true
         @player.turn_right
         @player_commands[1] = false
-      elsif @player_commands[2] == true
+      end
+      if @player_commands[2] == true
         #@player.fire
         @player_commands[2] = false 
-      elsif @player_commands[3] == true
-        @player.accelerate
-        @thrusting_p1 = true
-        start_jet_sound
-        @player_commands[3] = false
-        puts "ACCELERATING PLAYER 1"
-      elsif @player_commands[4] == true
+      end
+
+      if @player_commands[4] == true
         @player2.turn_left
         @player_commands[4] = false
-      elsif @player_commands[5] == true
+      end 
+      if @player_commands[5] == true
         @player2.turn_right
         @player_commands[5] = false
-      elsif @player_commands[6] == true
+      end
+      if @player_commands[6] == true
         #@player.fire
         @player_commands[6] = false
-      elsif @player_commands[7] == true
+      end
+      if @player_commands[3] == true
+        @player.accelerate
+        @thrusting_p1 = true
+        start_jet_sound(1)
+        @player_commands[3] = false
+        puts "ACCELERATING PLAYER 1"
+      else
+        @thrusting_p1 = false
+        stop_jet_sound(1)
+      end      
+      if @player_commands[7] == true
         @player2.accelerate
         @thrusting_p2 = true
-        start_jet_sound
+        start_jet_sound(2)
         @player_commands[7] = false
         puts "ACCELERATING PLAYER 2"
       else 
-        @thrusting_p1 = @thrusting_p2 = false
-        stop_jet_sound
+        @thrusting_p2 = false
+        stop_jet_sound(2)
       end
 
       @player.move
@@ -99,7 +119,8 @@ class GameWindow < Gosu::Window
       @player2.collect_stars(@stars)
 
       if @player.touch_moon || @player2.touch_moon
-        stop_jet_sound     
+        stop_jet_sound(1)
+        stop_jet_sound(2)     
         @game_over_time = Time.now
       end
 
@@ -111,7 +132,7 @@ class GameWindow < Gosu::Window
 
   def draw #draws the varibales everytime it its called 
     @background_image.draw(0, 0, ZOrder::Background)
-    @moon.draw(305, 225, ZOrder::Moon)
+    @moon.draw(306, 225, ZOrder::Moon)
     @stars.each { |star| star.draw }
     @font.draw("Red: #{@player.score}", 10, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     @font.draw("Blue: #{@player2.score}", 565, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
@@ -132,16 +153,31 @@ class GameWindow < Gosu::Window
     end
   end
 
-  def start_jet_sound
-    if @jet_sound_instance == nil
-      @jet_sound_instance = @jet_sound.play(1, 1, true) #volume, speed, looping
+  def start_jet_sound(player)
+    if player == 1
+      if @jet_sound_instance == nil
+        @jet_sound_instance = @jet_sound.play(1, 1, true) #volume, speed, looping
+      end
+    end
+    if player == 2
+      if @jet_sound_instance_p2 == nil
+        @jet_sound_instance_p2 = @jet_sound.play(1, 1, true) #volume, speed, looping
+      end
     end
   end
 
-  def stop_jet_sound
-    if @jet_sound_instance != nil
-      @jet_sound_instance.stop
-      @jet_sound_instance = nil
+  def stop_jet_sound(player)
+    if player == 1
+      if @jet_sound_instance != nil
+        @jet_sound_instance.stop
+        @jet_sound_instance = nil
+      end
+    end
+    if player == 2
+      if @jet_sound_instance_p2 != nil
+        @jet_sound_instance_p2.stop
+        @jet_sound_instance_p2 = nil
+      end
     end
   end
 end
