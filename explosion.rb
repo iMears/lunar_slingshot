@@ -18,11 +18,7 @@ class Explosion
     end
   end 
 
-  def draw
-    puts "DRAWING THE EXPLOSION"
-    puts "@image_index: #{@image_index}"
-    #if @image_index >= 0 && @image_index <= 10
-    @images[@image_index].draw(296, 216, ZOrder::Player)
-    #end
+  def draw(x, y)
+    @images[@image_index].draw(x, y, ZOrder::Background)
   end
 end

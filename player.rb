@@ -1,92 +1,43 @@
-class Player
-  attr_accessor :score
+class Player < FloatingObject
+  attr_accessor :score, :bullets_remaining
   def initialize(window, player_number)
-    if player_number == 1
+    super(window)
+    @player_number = player_number
+    if @player_number == 1
       @image = Gosu::Image.new(window, "media/Starfighter.png", false)
     else
       @image = Gosu::Image.new(window, "media/Starfighter2.png", false)
-      @angle = 180
     end
+    reset_velocity
     @image_jet = Gosu::Image.new(window, "media/Starfighter_jet.png", false)
     @image_jet_p2 = Gosu::Image.new(window, "media/Starfighter_jet_2.png", false)
     @beep = Gosu::Sample.new(window, "media/Beep.wav")
-    @explosion = Gosu::Sample.new(window, "media/Explosion.wav")
-    @woosh_sound = Gosu::Sample.new(window, "media/woosh_sound.wav")
-    @x = @y = @vel_x = @vel_y = @angle = 0.0
-    @centerX = 320
-    @centerY = 240
     @score = 0
     @score_player_2 = 0
+    @bullets =[]
+    @bullets = []
+    @bullet_sound = Gosu::Sample.new(window, "media/Fire_sound.wav")
+    @radius=9
+    @fire_armed = true
+    @bullets_remaining = 10
+    @store_window = window
   end
 
-  def warp(x, y)
-    @x, @y = x, y
+  def turn_left(do_it)
+    if do_it
+      @angle -= 2.5
+    end
   end
 
-  def turn_left
-    @angle -= 2.5
-  end
-
-  def turn_right
-    @angle += 2.5
+  def turn_right(do_it)
+    if do_it
+      @angle += 2.5
+    end
   end
 
   def accelerate
     @vel_x += Gosu::offset_x(@angle, 0.009)
     @vel_y += Gosu::offset_y(@angle, 0.009)
-  end
-
-  def move
-    gforce
-
-    @x += @vel_x
-    @y += @vel_y
-    @x %= 640 
-    @y %= 480
-
-    @vel_x *= 0.99995
-    @vel_y *= 0.99995
-
-    if @vel_x >= 5
-      @vel_x = 5
-    elsif @vel_x <= -5
-      @vel_x = -5
-    end
-
-    if @vel_y >= 5
-      @vel_y = 5
-    elsif @vel_y <= -5
-      @vel_y = -5
-    end
-    printf("Vel_x,y:%5.2f,%5.2f\n", @vel_x,@vel_y)
-    #puts "x: #{@vel_x}, y: #{@vel_y}"
-  end
-
-  def gforce
-      # force of gravity = k/d^2
-    @g_distance = Gosu::distance(@x, @y, @centerX, @centerY)
-    puts "@g_distance: #{@g_distance}"
-    if (@g_distance == 0)
-      @g_distance = 1.0
-    end
-    g_force = 100.0 / (@g_distance * @g_distance)
-    printf("dist:%5.2f, force:%7.5f\n", @g_distance, g_force)
-    gravity_accel_x = g_force * 1 * -(@x - @centerX)/@g_distance
-    gravity_accel_y = g_force * 1 * -(@y - @centerY)/@g_distance
-    @vel_x += gravity_accel_x * 1
-    @vel_y += gravity_accel_y * 1
-  end
-
-
-  def draw(thrusting, player)
-    @image.draw_rot(@x, @y, 1, @angle)
-    if thrusting == true && player == 1
-      @image_jet.draw_rot(@x, @y, 1, @angle)
-    elsif thrusting == true &&  player == 2
-      @image_jet_p2.draw_rot(@x, @y, 1, @angle)
-    else
-      #nothing
-    end
   end
 
   def score
@@ -98,26 +49,19 @@ class Player
   end
 
   def reset_velocity
-    @vel_x = @vel_y = @angle = 0.0
-  end
-
-  def touch_moon
-    if @g_distance < 19.5
-      puts "true"
-      @explosion.play
-      @vel_x = @vel_y = 0
-      clear_score
-      return true
+    @vel_x = @vel_y = 0.0
+    if @player_number != 1
+      @angle = 180
     else
-      puts "false"
-      puts "@x:#{@x} @y:#{@y}"
-      return false
+      @angle = 0.0
     end
+    # @angle = @player_number != 1 ? 180.0 : 0.0g
+    # @angle = if @player_number != 1 then 180.0 else 0.0 end
   end
 
   def collect_stars(stars)
     stars.reject! do |star|
-      if Gosu::distance(@x, @y, star.x, star.y) < 15 then
+      if Gosu::distance(@x, @y, star.x, star.y) < 10 then
         @score += 10
         @beep.play
         true
@@ -125,5 +69,30 @@ class Player
         false
       end
     end
+  end
+
+  def fire
+    # bullet fade out control
+    if @bullets_remaining >= 1
+      @bullets_remaining -= 1
+      @bullet_sound.play
+      my_bullet = Bullet.new(@store_window)
+      x_offset = Gosu::offset_x(@angle, 16)
+      y_offset = Gosu::offset_y(@angle, 16)
+      x_vel_offset = Gosu::offset_x(@angle, 1)
+      y_vel_offset = Gosu::offset_y(@angle, 1)
+      my_bullet.warp(self.x + x_offset, self.y + y_offset)
+      my_bullet.warp_vel(self.vel_x + x_vel_offset, self.vel_y + y_vel_offset)
+      my_bullet.warp_angle(@angle)
+      my_bullet
+    else
+      nil
+    end
+  end
+
+  def die
+    @vel_x = @vel_y = 0
+    clear_score
+    @bullets_remaining = 10
   end
 end
