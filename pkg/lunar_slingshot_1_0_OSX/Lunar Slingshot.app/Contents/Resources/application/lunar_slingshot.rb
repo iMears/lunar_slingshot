@@ -32,8 +32,6 @@ class GameWindow < Gosu::Window
     @moon = Moon.new(self)
     @players = []
     @bullets = []
-    @bullets[0] = nil
-    @bullets[1] = nil
     @players[0] = Player.new(self, 1)
     @players[1] = Player.new(self, 2)
     @players[0].warp(100, 240)
@@ -46,16 +44,16 @@ class GameWindow < Gosu::Window
     @explosion_offset_y = -20
     @explosion = Gosu::Sample.new(self, "media/Explosion.wav")
     @game_song = Gosu::Song.new(self, "media/Asteroids.mp3")
-    @game_song.play(looping = true)
+    #@game_song.play(looping = true)
   end
 
   def update #changes the state of the variables every iteration
     @frame_count += 1
     if @game_over_time != nil
-      if Time.now >= @game_over_time + 2 
+      if Time.now >= @game_over_time + 2
         @game_over_time = nil
         @bullets = []
-        @players[0].score = @players[1].score = 0
+        #@players[0].score = @players[1].score = 0
         @players[0].warp(100, 240)
         @players[1].warp(540, 240)
         @players[0].reset_velocity
@@ -88,7 +86,7 @@ class GameWindow < Gosu::Window
         @players[player_index].turn_left(key_commands[0])
         @players[player_index].turn_right(key_commands[1])
 
-       
+
         #process fire button
         if key_commands[2] #if button returns true
           if @fire_armed[player_index] #if armed
@@ -98,7 +96,7 @@ class GameWindow < Gosu::Window
               new_bullet.expiration = @frame_count + 200 #frame_count == what time it is now
               @bullets << new_bullet
             end
-            
+
             @fire_armed[player_index] = false #disarm
           else #not armed
             #nothing
@@ -110,7 +108,7 @@ class GameWindow < Gosu::Window
             #arm it
             @fire_armed[player_index] = true
          end
-        end 
+        end
 
         if key_commands[3] == true
           @players[player_index].accelerate
@@ -119,16 +117,16 @@ class GameWindow < Gosu::Window
         else
           @thrusting[player_index] = false
           stop_jet_sound(player_index + 1)
-        end      
+        end
 
         # move player and collect stars
         @players[player_index].move
-        @players[player_index].collect_stars(@stars)
+        #@players[player_index].collect_stars(@stars)
 
         # checks for player touching moon
         if @players[player_index].touches?(@moon)
           stop_jet_sound(1)
-          stop_jet_sound(2)     
+          stop_jet_sound(2)
           @players[0].die
           @players[1].die
           set_explosion(@players[player_index].x, @players[player_index].y)
@@ -136,11 +134,11 @@ class GameWindow < Gosu::Window
         end
 
         # check for player touching bullets
-        # iterate over array of bullets 
+        # iterate over array of bullets
         @bullets.each do |bullet|
-          if bullet != nil && @players[player_index].touches?(bullet) 
+          if bullet != nil && @players[player_index].touches?(bullet)
             stop_jet_sound(1)
-            stop_jet_sound(2)     
+            stop_jet_sound(2)
             @players[0].die
             @players[1].die
             set_explosion(@players[player_index].x, @players[player_index].y)
@@ -150,22 +148,24 @@ class GameWindow < Gosu::Window
       # check for player touching player
       if @players[0].touches?(@players[1])
         stop_jet_sound(1)
-        stop_jet_sound(2)     
+        stop_jet_sound(2)
         @players[0].die
         @players[1].die
         set_explosion(@players[0].x, @players[0].y)
       end
 
- 
+
       # for each bullet it will move it then expire
       # the bullet if it is too old
-      # then it puts the bullet back in the array 
-      # for the next time around   
-      @bullets.length.times do 
+      # then it puts the bullet back in the array
+      # for the next time around
+      @bullets.length.times do
         bullet = @bullets.shift
-        if bullet != nil 
+        if bullet != nil
           bullet.move
           if @frame_count >= bullet.expiration
+            player_that_fired_bullet = bullet.die # die method returns player that fired bullet
+            @players[player_that_fired_bullet-1].add_bullet
             bullet = nil
           end
         end
@@ -173,8 +173,8 @@ class GameWindow < Gosu::Window
           @bullets.push(bullet)
         end
       end
-    
-      
+
+
      #check bullets touching other bullets or moon
       max_index = @bullets.length
       bulletA_index = 0
@@ -183,7 +183,8 @@ class GameWindow < Gosu::Window
 
 
         if @bullets[bulletA_index] != nil && @bullets[bulletA_index].touches?(@moon)
-          @bullets[bulletA_index].die
+          player_that_fired_bullet = @bullets[bulletA_index].die
+          @players[player_that_fired_bullet-1].add_bullet
           @bullets[bulletA_index] = nil
           break
         end
@@ -191,17 +192,19 @@ class GameWindow < Gosu::Window
         bulletB_index = search_start_index
         # check bullet A agains bullet B
         (max_index - search_start_index).times do
-          
-          # bulletsB_index might be nil 
+
+          # bulletsB_index might be nil
           if @bullets[bulletA_index] != nil && @bullets[bulletA_index].touches?(@bullets[bulletB_index])
-            @bullets[bulletA_index].die
-            @bullets[bulletB_index].die
+            player_that_fired_bullet = @bullets[bulletA_index].die
+            @players[player_that_fired_bullet-1].add_bullet
+            player_that_fired_bullet = @bullets[bulletB_index].die
+            @players[player_that_fired_bullet-1].add_bullet
             @bullets[bulletA_index] = nil
             @bullets[bulletB_index] = nil
           end
           bulletB_index += 1
         end
-        bulletA_index += 1 
+        bulletA_index += 1
       end
 
       # make new stars
@@ -211,19 +214,19 @@ class GameWindow < Gosu::Window
     end
   end
 
-  def draw #draws the varibales everytime it its called 
+  def draw #draws the varibales everytime it its called
     @background_image.draw(0, 0, ZOrder::Background)
     @moon.draw(false, 3)
     @stars.each { |star| star.draw }
     @font.draw("--Red--", 10, 10, ZOrder::Player, 1.0, 1.0, 0xffffff00)
-    @font.draw("Score: #{@players[0].score}", 10, 50, ZOrder::Player, 1.0, 1.0, 0xffffff00)
+    @font.draw("Score: #{@players[0].score}", 10, 30, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     @font.draw_rel("--Blue--", 630, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
-    @font.draw_rel("Score: #{@players[1].score}", 630, 50, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
-    @font.draw("Ammo: #{@players[0].bullets_remaining}", 10, 30, ZOrder::Player, 1.0, 1.0, 0xffffff00)
-    @font.draw_rel("Ammo: #{@players[1].bullets_remaining}", 630, 30, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
+    @font.draw_rel("Score: #{@players[1].score}", 630, 30, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
+    #@font.draw("Ammo: #{@players[0].bullets_remaining}", 10, 50, ZOrder::Player, 1.0, 1.0, 0xffffff00)
+    #@font.draw_rel("Ammo: #{@players[1].bullets_remaining}", 630, 50, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #@font.draw_rel("Frame: #{@frame_count}", 330, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #calculate FPS using time!!
-    
+
     @bullets.each do |bullet|
       if bullet != nil
         bullet.draw(false, 3)
@@ -232,7 +235,7 @@ class GameWindow < Gosu::Window
 
     # if @game_over_time == nil
     @players[0].draw(@thrusting[0], 1)
-    @players[1].draw(@thrusting[1], 2)      
+    @players[1].draw(@thrusting[1], 2)
     # end
 
     if @game_over_time != nil

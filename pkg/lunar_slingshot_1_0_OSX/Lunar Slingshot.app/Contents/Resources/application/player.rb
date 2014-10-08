@@ -13,12 +13,10 @@ class Player < FloatingObject
     @image_jet_p2 = Gosu::Image.new(window, "media/Starfighter_jet_2.png", false)
     @beep = Gosu::Sample.new(window, "media/Beep.wav")
     @score = 0
-    @score_player_2 = 0
-    @bullets = []
     @bullet_sound = Gosu::Sample.new(window, "media/Fire_sound.wav")
     @radius= 8
     @fire_armed = true
-    @bullets_remaining = 10
+    @bullets_remaining = 4
     @store_window = window
   end
 
@@ -61,8 +59,8 @@ class Player < FloatingObject
   def collect_stars(stars)
     stars.reject! do |star|
       if Gosu::distance(@x, @y, star.x, star.y) < 10 then
-        @score += 10
-        @beep.play
+        #@score += 10
+        #@beep.play
         true
       else
         false
@@ -75,7 +73,7 @@ class Player < FloatingObject
     if @bullets_remaining >= 1
       @bullets_remaining -= 1
       @bullet_sound.play
-      my_bullet = Bullet.new(@store_window)
+      my_bullet = Bullet.new(@store_window, @player_number)
       x_offset = Gosu::offset_x(@angle, 16)
       y_offset = Gosu::offset_y(@angle, 16)
       x_vel_offset = Gosu::offset_x(@angle, 1)
@@ -91,7 +89,13 @@ class Player < FloatingObject
 
   def die
     @vel_x = @vel_y = 0
-    clear_score
-    @bullets_remaining = 10
+    @bullets_remaining = 4
+    #clear_score
+  end
+
+  def add_bullet
+    if @bullets_remaining < 5
+      @bullets_remaining += 1
+    end
   end
 end
