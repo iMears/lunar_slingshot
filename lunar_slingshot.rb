@@ -45,9 +45,15 @@ class GameWindow < Gosu::Window
     @explosion = Gosu::Sample.new(self, "media/Explosion.wav")
     @game_song = Gosu::Song.new(self, "media/Asteroids.mp3")
     @game_song.play(looping = true)
+    @time_last_frame = -1.0
+    @time_now = -1.0
   end
 
   def update #changes the state of the variables every iteration
+    # sample frame time
+    @time_last_frame = @time_now
+    @time_now = Time.now.to_f
+    @time_of_frame = @time_now - @time_last_frame
     @frame_count += 1
     if @game_over_time != nil
       if Time.now >= @game_over_time + 2
@@ -224,7 +230,7 @@ class GameWindow < Gosu::Window
     @font.draw_rel("Score: #{@players[1].score}", 630, 30, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #@font.draw("Ammo: #{@players[0].bullets_remaining}", 10, 50, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     #@font.draw_rel("Ammo: #{@players[1].bullets_remaining}", 630, 50, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
-    #@font.draw_rel("Frame: #{@frame_count}", 330, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
+    @font.draw_rel("Frame: #{@frame_count}", 330, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #calculate FPS using time!!
 
     @bullets.each do |bullet|

@@ -9,7 +9,7 @@
       end
       if @keyboard_controls_left[2] == true
         @bullets[0] = @players[0].fire
-        @keyboard_controls_left[2] = false 
+        @keyboard_controls_left[2] = false
       end
       if @keyboard_controls_left[3] == true
         @players[0].accelerate
@@ -19,19 +19,19 @@
       else
         @thrusting_p1 = false
         stop_jet_sound(1)
-      end      
+      end
 
       player_index = 0
       2.times do
         @players[player_index].move
         @players[player_index].collect_stars(@stars)
-        if @bullets[player_index] != nil 
+        if @bullets[player_index] != nil
           @bullets[player_index].move
         end
 
         if @players[player_index].touches?(@moon)
           stop_jet_sound(1)
-          stop_jet_sound(2)     
+          stop_jet_sound(2)
           @players[0].die
           @players[1].die
           @game_over_time = Time.now
@@ -44,7 +44,7 @@
     end
   end
 
-  def draw #draws the varibales everytime it its called 
+  def draw #draws the varibales everytime it its called
     @background_image.draw(0, 0, ZOrder::Background)
     @moon.draw(false, 3)
     @stars.each { |star| star.draw }
