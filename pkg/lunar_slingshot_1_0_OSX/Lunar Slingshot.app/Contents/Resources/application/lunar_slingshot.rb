@@ -5,6 +5,7 @@ require './star'
 require './explosion'
 require './bullet'
 require './moon'
+require './statD'
 
 
 
@@ -44,10 +45,22 @@ class GameWindow < Gosu::Window
     @explosion_offset_y = -20
     @explosion = Gosu::Sample.new(self, "media/Explosion.wav")
     @game_song = Gosu::Song.new(self, "media/Asteroids.mp3")
-    #@game_song.play(looping = true)
+    @game_song.play(looping = true)
+    @time_last_frame = -1.0
+    @time_now = -1.0
+    @frame_time_stat = StatD.new(6000)
   end
 
   def update #changes the state of the variables every iteration
+    # sample frame time
+    @time_last_frame = @time_now
+    @time_now = Time.now.to_f
+    if (@time_last_frame > 0.0)
+      @time_of_frame = @time_now - @time_last_frame
+    else
+      @time_of_frame = 0.020
+    end
+    @frame_time_stat.add_sample(@time_of_frame)
     @frame_count += 1
     if @game_over_time != nil
       if Time.now >= @game_over_time + 2
@@ -107,7 +120,7 @@ class GameWindow < Gosu::Window
           else #not armed
             #arm it
             @fire_armed[player_index] = true
-         end
+          end
         end
 
         if key_commands[3] == true
@@ -130,6 +143,9 @@ class GameWindow < Gosu::Window
           @players[0].die
           @players[1].die
           set_explosion(@players[player_index].x, @players[player_index].y)
+          if @players[player_index].score > 0
+            @players[player_index].score -= 1
+          end
           break
         end
 
@@ -142,6 +158,7 @@ class GameWindow < Gosu::Window
             @players[0].die
             @players[1].die
             set_explosion(@players[player_index].x, @players[player_index].y)
+            @players[other_player_index(player_index)].score += 1
           end
         end
       end  #end of player index loop
@@ -151,6 +168,7 @@ class GameWindow < Gosu::Window
         stop_jet_sound(2)
         @players[0].die
         @players[1].die
+
         set_explosion(@players[0].x, @players[0].y)
       end
 
@@ -224,7 +242,10 @@ class GameWindow < Gosu::Window
     @font.draw_rel("Score: #{@players[1].score}", 630, 30, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #@font.draw("Ammo: #{@players[0].bullets_remaining}", 10, 50, ZOrder::Player, 1.0, 1.0, 0xffffff00)
     #@font.draw_rel("Ammo: #{@players[1].bullets_remaining}", 630, 50, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
-    #@font.draw_rel("Frame: #{@frame_count}", 330, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
+    #frame_time = @frame_time_stat.s_ave
+    #rate_string = sprintf("%6.1f mSec",frame_time * 1000.0)
+    #rate_string = @frame_time_stat.print_2
+    #@font.draw_rel("#{rate_string}", 450, 10, ZOrder::Player, 1.0, 0, 1.0, 1.0, 0xffffff00)
     #calculate FPS using time!!
 
     @bullets.each do |bullet|
@@ -242,6 +263,11 @@ class GameWindow < Gosu::Window
       @explosion_image.draw(@explosion_location_x + @explosion_offset_x, @explosion_location_y + @explosion_offset_y)
       @font2.draw("GAME OVER", 210, 100, ZOrder::Player,1.0, 1.0, 0xffffffff)
     end
+  end
+
+  def other_player_index(num)
+
+    1 - num
   end
 
   def set_explosion(location_x, location_y)

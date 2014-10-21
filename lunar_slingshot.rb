@@ -45,7 +45,7 @@ class GameWindow < Gosu::Window
     @explosion_offset_y = -20
     @explosion = Gosu::Sample.new(self, "media/Explosion.wav")
     @game_song = Gosu::Song.new(self, "media/Asteroids.mp3")
-    #@game_song.play(looping = true)
+    @game_song.play(looping = true)
     @time_last_frame = -1.0
     @time_now = -1.0
     @frame_time_stat = StatD.new(6000)
