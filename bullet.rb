@@ -10,7 +10,6 @@ class Bullet < FloatingObject
 	end
 
 	def die
-    puts "bullet died!"
     @player_that_fired_me
   end
 end
