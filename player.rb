@@ -37,10 +37,6 @@ class Player < FloatingObject
     @vel_y += Gosu::offset_y(@angle, 0.009)
   end
 
-  def score
-    @score
-  end
-
   def clear_score
     @score = 0
   end
@@ -58,7 +54,7 @@ class Player < FloatingObject
 
   def collect_stars(stars)
     stars.reject! do |star|
-      if Gosu::distance(@x, @y, star.x, star.y) < 10 then
+      if Gosu::distance(@x, @y, star.x, star.y) < 10
         #@score += 10
         #@beep.play
         true

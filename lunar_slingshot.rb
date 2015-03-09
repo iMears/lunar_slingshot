@@ -266,7 +266,6 @@ class GameWindow < Gosu::Window
   end
 
   def other_player_index(num)
-
     1 - num
   end
 
@@ -276,10 +275,6 @@ class GameWindow < Gosu::Window
     @explosion_location_y = location_y
     @game_over_time = Time.now
   end
-
-  # def clear_explosion
-
-  # end
 
   def button_down(id)
     if id == Gosu::KbEscape
